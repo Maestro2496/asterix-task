@@ -1,11 +1,11 @@
 import { UploadResponse } from "./types";
-import { getAuthToken } from "./auth";
+
 import { AppError } from "./errors";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 function getAuthHeaders(): HeadersInit {
-  const token = getAuthToken();
+  const token = "TOKEN"; //SHOULD BE A TOKEN
   const headers: HeadersInit = {};
   headers["Authorization"] = `Bearer ${token}`; //
   return headers;
