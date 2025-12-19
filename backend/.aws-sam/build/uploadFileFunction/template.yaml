@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  asterix-task
+Transform:
+  - AWS::Serverless-2016-10-31
+
+# Resources declares the AWS resources that you want to include in the stack
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
+Resources:
+  # API Gateway with Lambda Authorizer
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+      Auth:
+        DefaultAuthorizer: LambdaAuthorizer
+        AddDefaultAuthorizerToCorsPreflight: false
+        Authorizers:
+          LambdaAuthorizer:
+            FunctionArn: !GetAtt AuthorizerFunction.Arn
+            Identity:
+              Headers:
+                - Authorization
+
+  # Lambda Authorizer function
+  AuthorizerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/authorizer.authorizerHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 10
+      Description: API Gateway Lambda Authorizer
+
+  # S3 bucket for storing uploaded PDF files
+  FilesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-files-${AWS::AccountId}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  # Lambda function for uploading files to S3
+  uploadFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/upload-file.uploadFileHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Timeout: 30
+      Description: Upload files directly to the S3 bucket
+      Policies:
+        # S3 permissions for the files bucket
+        - S3CrudPolicy:
+            BucketName: !Ref FilesBucket
+        # DynamoDB permissions for the NHSLetters table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NHSLettersTable
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref FilesBucket
+          NHS_LETTERS_TABLE: !Ref NHSLettersTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /upload
+            Method: POST
+  # Lambda function to get all uploaded files
+  getAllFilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/get-all-files.getAllFilesHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Timeout: 30
+      Description: Get all uploaded files
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref NHSLettersTable
+      Environment:
+        Variables:
+          NHS_LETTERS_TABLE: !Ref NHSLettersTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /all
+            Method: GET
+
+  # DynamoDB table to store NHS letter data extracted from PDFs
+  NHSLettersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-NHSLetters"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: uploaded_at
+          AttributeType: S
+        - AttributeName: date_partition
+          AttributeType: S
+        - AttributeName: letter_date_partition
+          AttributeType: S
+        - AttributeName: letter_date
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: uploaded_at
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: ByUploadDate
+          KeySchema:
+            - AttributeName: date_partition
+              KeyType: HASH
+            - AttributeName: uploaded_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ByLetterDate
+          KeySchema:
+            - AttributeName: letter_date_partition
+              KeyType: HASH
+            - AttributeName: letter_date
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  ApplicationResourceGroup:
+    Type: AWS::ResourceGroups::Group
+    Properties:
+      Name:
+        Fn::Sub: ApplicationInsights-SAM-${AWS::StackName}
+      ResourceQuery:
+        Type: CLOUDFORMATION_STACK_1_0
+  ApplicationInsightsMonitoring:
+    Type: AWS::ApplicationInsights::Application
+    Properties:
+      ResourceGroupName:
+        Ref: ApplicationResourceGroup
+      AutoConfigurationEnabled: "true"
+Outputs:
+  WebEndpoint:
+    Description: API Gateway endpoint URL for Prod stage
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
+  FilesBucketName:
+    Description: S3 bucket for uploaded files
+    Value: !Ref FilesBucket
+  FilesBucketArn:
+    Description: S3 bucket ARN
+    Value: !GetAtt FilesBucket.Arn
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON
