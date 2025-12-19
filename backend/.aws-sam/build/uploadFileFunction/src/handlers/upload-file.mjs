@@ -61,6 +61,40 @@ const checkForDuplicate = async (nhsNumber, contentHash) => {
   }
 };
 
+/**
+ * Validate extracted NHS letter details
+ * @param {object} nhsDetails - Extracted details from PDF
+ * @returns {object|null} - Error response object if validation fails, null if valid
+ */
+const validateNhsLetter = (nhsDetails) => {
+  const errors = [];
+
+  if (!nhsDetails.nhsNumber) {
+    errors.push("NHS Number could not be detected in the document");
+  }
+
+  if (!nhsDetails.letter_date) {
+    errors.push("Letter date could not be detected in the document");
+  }
+
+  if (!nhsDetails.body) {
+    errors.push("Letter content could not be extracted from the document");
+  }
+
+  if (errors.length > 0) {
+    return {
+      statusCode: 422,
+      body: JSON.stringify({
+        error: "Invalid NHS letter",
+        message: errors.join(". ") + ".",
+        details: errors,
+      }),
+    };
+  }
+
+  return null;
+};
+
 export const uploadFileHandler = async (event) => {
   if (event.httpMethod !== "POST") {
     return {
@@ -136,6 +170,12 @@ export const uploadFileHandler = async (event) => {
       nhsDetails.nhsNumber = nhsDetails.nhsNumber.replace(/\s/g, "");
     }
 
+    // Validate required fields before proceeding
+    const validationError = validateNhsLetter(nhsDetails);
+    if (validationError) {
+      return validationError;
+    }
+
     // Generate content hash for duplicate detection
     const contentHash = generateContentHash(body);
 
@@ -173,7 +213,7 @@ export const uploadFileHandler = async (event) => {
 
     // Save to DynamoDB with pending status
     const dbItem = {
-      pk: nhsDetails.nhsNumber || `UNKNOWN-${Date.now()}`,
+      pk: nhsDetails.nhsNumber,
       uploaded_at: uploadTimestamp,
       file_name: filename,
       letter_date: nhsDetails.letter_date,
