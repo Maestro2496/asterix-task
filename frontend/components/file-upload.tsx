@@ -84,6 +84,13 @@ export function FileUpload() {
     try {
       const base64 = await fileToBase64(file);
       const result = await uploadFile(base64, file.name);
+
+      // Check if the response contains an error
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+
       setUploadResult(result);
       setFile(null);
     } catch (err) {

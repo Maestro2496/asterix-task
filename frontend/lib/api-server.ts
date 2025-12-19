@@ -38,8 +38,17 @@ export async function uploadFile(
   });
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || "Failed to upload file");
+    let errorMessage = "Failed to upload file";
+    try {
+      const error = await response.json();
+      errorMessage = error.message || errorMessage;
+    } catch {
+      // Response wasn't JSON, use status text
+      errorMessage = response.statusText || errorMessage;
+    }
+    // Return error as part of response instead of throwing
+    // This allows client components to handle the error gracefully
+    return { error: errorMessage } as UploadResponse;
   }
 
   return response.json();

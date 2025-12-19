@@ -133,7 +133,7 @@ export const uploadFileHandler = async (event) => {
 
     // Remove spaces from NHS number
     if (nhsDetails.nhsNumber) {
-      nhsDetails.nhsNumber = nhsDetails.nhsNumber.replaceAll(/\s/g, "");
+      nhsDetails.nhsNumber = nhsDetails.nhsNumber.replace(/\s/g, "");
     }
 
     // Generate content hash for duplicate detection

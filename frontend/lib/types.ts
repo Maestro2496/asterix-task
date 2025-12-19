@@ -29,6 +29,7 @@ export interface UploadResponse {
     text: string;
     num_pages: number;
   };
+  error?: string;
 }
 
 export interface AllFilesResponse {
