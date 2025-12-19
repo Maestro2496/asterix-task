@@ -2,6 +2,12 @@
 
 A serverless application for uploading, processing, and summarizing NHS letters using AI.
 
+🔗 **Live Demo:** [https://master.d1vexku8ke37lw.amplifyapp.com](https://master.d1vexku8ke37lw.amplifyapp.com)
+
+## Architecture Overview
+
+![Architecture Diagram](./architecture.png)
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
