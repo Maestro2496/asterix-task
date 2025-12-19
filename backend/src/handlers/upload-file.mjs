@@ -67,27 +67,15 @@ const checkForDuplicate = async (nhsNumber, contentHash) => {
  * @returns {object|null} - Error response object if validation fails, null if valid
  */
 const validateNhsLetter = (nhsDetails) => {
-  const errors = [];
+  const isValid =
+    nhsDetails.nhsNumber && nhsDetails.letter_date && nhsDetails.body;
 
-  if (!nhsDetails.nhsNumber) {
-    errors.push("NHS Number could not be detected in the document");
-  }
-
-  if (!nhsDetails.letter_date) {
-    errors.push("Letter date could not be detected in the document");
-  }
-
-  if (!nhsDetails.body) {
-    errors.push("Letter content could not be extracted from the document");
-  }
-
-  if (errors.length > 0) {
+  if (!isValid) {
     return {
       statusCode: 422,
       body: JSON.stringify({
-        error: "Invalid NHS letter",
-        message: errors.join(". ") + ".",
-        details: errors,
+        error: "Invalid letter",
+        message: "Invalid letter",
       }),
     };
   }

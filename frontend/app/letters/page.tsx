@@ -1,14 +1,9 @@
 import { Suspense } from "react";
-import { LettersSearch } from "@/components/letters-search";
 import { LettersTable } from "@/components/letters-table";
 import { listAllUploadedFiles } from "@/lib/api-server";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-interface PageProps {
-  searchParams: Promise<{ nhs?: string }>;
-}
-
-async function LettersResults({ nhsNumber }: { nhsNumber?: string }) {
+async function LettersResults() {
   let result;
   let error: Error | null = null;
 
@@ -27,11 +22,7 @@ async function LettersResults({ nhsNumber }: { nhsNumber?: string }) {
     );
   }
 
-  const files = nhsNumber
-    ? result!.files.filter((file) => file.pk === nhsNumber)
-    : result!.files;
-
-  return <LettersTable letters={files} nhsNumber={nhsNumber} />;
+  return <LettersTable letters={result?.files || []} />;
 }
 
 function LettersLoading() {
@@ -61,24 +52,16 @@ function LettersLoading() {
   );
 }
 
-export default async function LettersPage({ searchParams }: PageProps) {
-  const { nhs } = await searchParams;
-
+export default async function LettersPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Letters</h1>
-        <p className="text-muted-foreground mt-2">
-          View and search uploaded NHS letters by patient NHS number.
-        </p>
+        <p className="text-muted-foreground mt-2">View uploaded NHS letters.</p>
       </div>
 
-      <Suspense fallback={null}>
-        <LettersSearch />
-      </Suspense>
-
       <Suspense fallback={<LettersLoading />}>
-        <LettersResults nhsNumber={nhs} />
+        <LettersResults />
       </Suspense>
     </div>
   );

@@ -215,7 +215,7 @@ export function FileUpload() {
       </Card>
 
       {uploadResult && (
-        <Card className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950">
+        <Card className="border-dashed bg-[#a9bbb1]/50 dark:border-green-800 dark:bg-green-950">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-green-800 dark:text-green-200">
@@ -236,7 +236,7 @@ export function FileUpload() {
                   NHS Number
                 </Label>
                 <p className="text-2xl font-bold font-mono tracking-wider">
-                  {uploadResult.nhs_number
+                  {uploadResult?.nhs_number
                     ? `***-***-${uploadResult.nhs_number.slice(-4)}`
                     : "Not detected"}
                 </p>
@@ -246,42 +246,23 @@ export function FileUpload() {
                   Letter Date
                 </Label>
                 <p className="text-lg font-medium">
-                  {uploadResult.letter_date || "Not detected"}
+                  {uploadResult?.letter_date || "Not detected"}
                 </p>
               </div>
             </div>
-
-            <Alert className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
-              <svg
-                className="h-4 w-4 text-amber-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <AlertTitle className="text-amber-800 dark:text-amber-200">
-                Summary Being Processed
-              </AlertTitle>
-            </Alert>
 
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">File Info</Label>
               <div className="flex gap-4 text-sm">
                 <span>
-                  <strong>File:</strong> {uploadResult.key}
+                  <strong>File:</strong> {uploadResult?.key}
                 </span>
                 <span>
-                  <strong>Size:</strong> {(uploadResult.size / 1024).toFixed(1)}{" "}
-                  KB
+                  <strong>Size:</strong>{" "}
+                  {(uploadResult?.size / 1024).toFixed(1)} KB
                 </span>
                 <span>
-                  <strong>Pages:</strong> {uploadResult.pdf_content.num_pages}
+                  <strong>Pages:</strong> {uploadResult?.pdf_content.num_pages}
                 </span>
               </div>
             </div>
