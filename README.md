@@ -4,6 +4,7 @@ A serverless application for uploading, processing, and summarizing NHS letters 
 
 ## Table of Contents
 
+- [Getting Started](#getting-started)
 - [Architecture Overview](#architecture-overview)
 - [System Design Choices](#system-design-choices)
 - [Async Processing Pattern](#async-processing-pattern)
@@ -13,6 +14,25 @@ A serverless application for uploading, processing, and summarizing NHS letters 
 - [Future Improvements](#future-improvements)
 - [AI Prompt Engineering](#ai-prompt-engineering)
 - [Running Locally](#running-locally)
+
+---
+
+## Getting Started
+
+1. Clone the repository
+2. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+3. Create a `.env.local` file and set the API URL:
+   ```env
+   NEXT_PUBLIC_API_URL=https://wcnpoewlzb.execute-api.us-east-1.amazonaws.com/Prod
+   ```
+4. Install dependencies and run:
+   ```bash
+   npm install
+   npm run dev
+   ```
 
 ---
 
@@ -192,6 +212,8 @@ npm run dev
 ```
 
 ### Backend
+
+PS: Docker must be installed on the machine
 
 ```bash
 cd backend

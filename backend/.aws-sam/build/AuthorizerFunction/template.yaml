@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  asterix-task
+  asterix-nhs-files
 Transform:
   - AWS::Serverless-2016-10-31
 
@@ -83,6 +83,44 @@ Resources:
             RestApiId: !Ref ApiGateway
             Path: /upload
             Method: POST
+  # Lambda function to process files (triggered by S3 ObjectCreated)
+  ProcessFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/process-file.processFileHandler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      MemorySize: 256
+      Timeout: 60
+      Description: Process uploaded files and generate AI summaries
+      Policies:
+        # S3 read permissions for the files bucket (use Sub to avoid circular dependency)
+        - S3ReadPolicy:
+            BucketName: !Sub "${AWS::StackName}-files-${AWS::AccountId}"
+        # DynamoDB permissions for the NHSLetters table
+        - DynamoDBCrudPolicy:
+            TableName: !Ref NHSLettersTable
+        # SSM permissions to read the OpenAI API key
+        - SSMParameterReadPolicy:
+            ParameterName: OPENAI_KEY
+      Environment:
+        Variables:
+          # Use Sub instead of Ref to avoid circular dependency with S3 event
+          BUCKET_NAME: !Sub "${AWS::StackName}-files-${AWS::AccountId}"
+          NHS_LETTERS_TABLE: !Ref NHSLettersTable
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref FilesBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .pdf
+
   # Lambda function to get all uploaded files
   getAllFilesFunction:
     Type: AWS::Serverless::Function

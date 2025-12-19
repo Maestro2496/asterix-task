@@ -106,7 +106,7 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
               </p>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -270,7 +270,7 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
                 {selectedLetter.summary && (
                   <div>
                     <h3 className="text-sm font-semibold mb-2">Summary</h3>
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded-lg p-4">
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded p-4">
                       {selectedLetter.summary}
                     </div>
                   </div>
@@ -281,7 +281,7 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
                     <h3 className="text-sm font-semibold mb-2">
                       Letter Content
                     </h3>
-                    <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded p-4 max-h-96 overflow-y-auto">
                       {selectedLetter.letter_body}
                     </div>
                   </div>

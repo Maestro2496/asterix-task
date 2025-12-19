@@ -105,7 +105,7 @@ export function FileUpload() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div
-            className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            className={`border-2 border-dashed rounded p-8 text-center transition-colors ${
               isDragOver
                 ? "border-primary bg-primary/5"
                 : "border-muted-foreground/25"
@@ -151,7 +151,7 @@ export function FileUpload() {
           </div>
 
           {file && (
-            <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+            <div className="flex items-center justify-between p-3 bg-muted rounded">
               <div className="flex items-center gap-3">
                 <svg
                   className="h-8 w-8 text-red-500"
@@ -259,11 +259,6 @@ export function FileUpload() {
               <AlertTitle className="text-amber-800 dark:text-amber-200">
                 Summary Being Processed
               </AlertTitle>
-              <AlertDescription className="text-amber-700 dark:text-amber-300">
-                Your letter is being analyzed by AI to generate a summary. This
-                typically takes 10-30 seconds. Check the Letters page to view
-                the processed summary.
-              </AlertDescription>
             </Alert>
 
             <div className="space-y-2">

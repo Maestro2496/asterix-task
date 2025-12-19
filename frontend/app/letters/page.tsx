@@ -22,7 +22,7 @@ async function LettersResults({ nhsNumber }: { nhsNumber?: string }) {
     return (
       <Alert variant="destructive">
         <AlertTitle>Error</AlertTitle>
-        <AlertDescription>{error.message}</AlertDescription>
+        <AlertDescription>Sorry, something bad happened</AlertDescription>
       </Alert>
     );
   }

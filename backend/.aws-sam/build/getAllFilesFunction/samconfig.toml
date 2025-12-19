@@ -3,7 +3,7 @@
 version = 0.1
 
 [default.global.parameters]
-stack_name = "asterix-task-eddy"
+stack_name = "asterix-nhs-files"
 
 [default.build.parameters]
 cached = true

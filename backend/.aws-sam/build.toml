@@ -5,8 +5,8 @@ codeuri = "/Users/eddy/Projects/asterix/backend"
 runtime = "nodejs22.x"
 architecture = "x86_64"
 handler = "src/handlers/authorizer.authorizerHandler"
-manifest_hash = "cffc496bc7fed54aaed12a0a149dd178"
+manifest_hash = "079fdf0fb946e4b14e4d6a29eb54b346"
 packagetype = "Zip"
-functions = ["AuthorizerFunction", "uploadFileFunction", "getAllFilesFunction"]
+functions = ["AuthorizerFunction", "uploadFileFunction", "ProcessFileFunction", "getAllFilesFunction"]
 
 [layer_build_definitions]

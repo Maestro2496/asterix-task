@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: asterix-task
+Description: asterix-nhs-files
 Transform:
 - AWS::Serverless-2016-10-31
 Resources:
@@ -85,6 +85,46 @@ Resources:
       CodeUri: uploadFileFunction
     Metadata:
       SamResourceId: uploadFileFunction
+  ProcessFileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/handlers/process-file.processFileHandler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 256
+      Timeout: 60
+      Description: Process uploaded files and generate AI summaries
+      Policies:
+      - S3ReadPolicy:
+          BucketName:
+            Fn::Sub: ${AWS::StackName}-files-${AWS::AccountId}
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: NHSLettersTable
+      - SSMParameterReadPolicy:
+          ParameterName: OPENAI_KEY
+      Environment:
+        Variables:
+          BUCKET_NAME:
+            Fn::Sub: ${AWS::StackName}-files-${AWS::AccountId}
+          NHS_LETTERS_TABLE:
+            Ref: NHSLettersTable
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: FilesBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: suffix
+                  Value: .pdf
+      CodeUri: ProcessFileFunction
+    Metadata:
+      SamResourceId: ProcessFileFunction
   getAllFilesFunction:
     Type: AWS::Serverless::Function
     Properties:

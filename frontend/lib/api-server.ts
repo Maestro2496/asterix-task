@@ -2,9 +2,18 @@
 import { UploadResponse, NHSLetter, AllFilesResponse } from "./types";
 
 // API base URL - configure this for your environment
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://wcnpoewlzb.execute-api.us-east-1.amazonaws.com/Prod";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+function appendDateToFilename(filename: string): string {
+  const date = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  const lastDotIndex = filename.lastIndexOf(".");
+  if (lastDotIndex === -1) {
+    return `${filename}_${date}`;
+  }
+  const name = filename.slice(0, lastDotIndex);
+  const ext = filename.slice(lastDotIndex);
+  return `${name}_${date}${ext}`;
+}
 
 export async function uploadFile(
   base64Data: string,
@@ -22,7 +31,7 @@ export async function uploadFile(
     method: "POST",
     headers: {
       "Content-Type": "application/pdf",
-      "x-filename": filename,
+      "x-filename": appendDateToFilename(filename),
       Authorization: "Bearer TOKEN",
     },
     body: base64Data,
