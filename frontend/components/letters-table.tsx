@@ -65,6 +65,20 @@ function formatFileSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function maskNhsNumber(nhsNumber: string | undefined) {
+  if (!nhsNumber) return "-";
+  return `***-***-${nhsNumber.slice(-4)}`;
+}
+
+function maskNhsNumbersInText(text: string | undefined) {
+  if (!text) return text;
+  // Match NHS numbers in various formats: 123 456 7890, 123-456-7890, 1234567890
+  return text.replace(
+    /\b(\d{3})[\s-]?(\d{3})[\s-]?(\d{4})\b/g,
+    (_, _p1, _p2, p3) => `***-***-${p3}`
+  );
+}
+
 export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
   const [selectedLetter, setSelectedLetter] = useState<NHSLetter | null>(null);
 
@@ -75,10 +89,12 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>
-                {nhsNumber ? `Letters for NHS ${nhsNumber}` : "All Letters"}
+                {nhsNumber
+                  ? `Letters for NHS ${maskNhsNumber(nhsNumber)}`
+                  : "All Letters"}
               </CardTitle>
               <CardDescription>
-                {letters.length} letter{letters.length !== 1 ? "s" : ""} found
+                {letters.length} letter{letters.length === 1 ? "" : "s"} found
               </CardDescription>
             </div>
           </div>
@@ -127,7 +143,7 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
                       onClick={() => setSelectedLetter(letter)}
                     >
                       <TableCell className="font-mono">
-                        {letter.nhs_number || letter.pk}
+                        {maskNhsNumber(letter.nhs_number || letter.pk)}
                       </TableCell>
                       <TableCell className="font-medium">
                         {letter.file_name}
@@ -210,7 +226,10 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
               <SheetHeader>
                 <SheetTitle>{selectedLetter.file_name}</SheetTitle>
                 <SheetDescription>
-                  NHS Number: {selectedLetter.nhs_number || selectedLetter.pk}
+                  NHS Number:{" "}
+                  {maskNhsNumber(
+                    selectedLetter.nhs_number || selectedLetter.pk
+                  )}
                 </SheetDescription>
               </SheetHeader>
 
@@ -271,7 +290,7 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
                   <div>
                     <h3 className="text-sm font-semibold mb-2">Summary</h3>
                     <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded p-4">
-                      {selectedLetter.summary}
+                      {maskNhsNumbersInText(selectedLetter.summary)}
                     </div>
                   </div>
                 )}
@@ -282,7 +301,7 @@ export function LettersTable({ letters, nhsNumber }: LettersTableProps) {
                       Letter Content
                     </h3>
                     <div className="text-sm text-muted-foreground whitespace-pre-wrap bg-muted/50 rounded p-4 max-h-96 overflow-y-auto">
-                      {selectedLetter.letter_body}
+                      {maskNhsNumbersInText(selectedLetter.letter_body)}
                     </div>
                   </div>
                 )}

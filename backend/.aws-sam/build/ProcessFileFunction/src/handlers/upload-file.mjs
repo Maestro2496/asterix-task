@@ -1,8 +1,13 @@
 // Upload file handler for S3 bucket
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  PutCommand,
+  QueryCommand,
+} from "@aws-sdk/lib-dynamodb";
 import pdf from "pdf-parse";
+import crypto from "node:crypto";
 import {
   extractNhsDetails,
   getDatePartition,
@@ -25,6 +30,35 @@ const getHeader = (headers, name) => {
     }
   }
   return null;
+};
+
+// Generate SHA-256 hash of content
+const generateContentHash = (buffer) => {
+  return crypto.createHash("sha256").update(buffer).digest("hex");
+};
+
+// Check if a duplicate letter already exists
+const checkForDuplicate = async (nhsNumber, contentHash) => {
+  if (!nhsNumber) return null;
+
+  try {
+    const result = await ddbDocClient.send(
+      new QueryCommand({
+        TableName: nhsLettersTable,
+        KeyConditionExpression: "pk = :pk",
+        FilterExpression: "content_hash = :hash",
+        ExpressionAttributeValues: {
+          ":pk": nhsNumber,
+          ":hash": contentHash,
+        },
+      })
+    );
+
+    return result.Items?.[0] || null;
+  } catch (error) {
+    console.error("Error checking for duplicate:", error);
+    return null;
+  }
 };
 
 export const uploadFileHandler = async (event) => {
@@ -99,7 +133,27 @@ export const uploadFileHandler = async (event) => {
 
     // Remove spaces from NHS number
     if (nhsDetails.nhsNumber) {
-      nhsDetails.nhsNumber = nhsDetails.nhsNumber.replace(/\s/g, "");
+      nhsDetails.nhsNumber = nhsDetails.nhsNumber.replaceAll(/\s/g, "");
+    }
+
+    // Generate content hash for duplicate detection
+    const contentHash = generateContentHash(body);
+
+    // Check for duplicate
+    const existingLetter = await checkForDuplicate(
+      nhsDetails.nhsNumber,
+      contentHash
+    );
+    if (existingLetter) {
+      return {
+        statusCode: 409,
+        body: JSON.stringify({
+          error: "Duplicate letter",
+          message: "This letter has already been uploaded.",
+          existing_file: existingLetter.file_name,
+          uploaded_at: existingLetter.uploaded_at,
+        }),
+      };
     }
 
     // Generate timestamps and partitions
@@ -129,6 +183,7 @@ export const uploadFileHandler = async (event) => {
       num_pages: pdfData.numpages,
       date_partition: datePartition,
       letter_date_partition: letterDatePartition,
+      content_hash: contentHash,
       status: "pending",
     };
 

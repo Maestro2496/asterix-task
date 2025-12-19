@@ -229,7 +229,9 @@ export function FileUpload() {
                   NHS Number
                 </Label>
                 <p className="text-2xl font-bold font-mono tracking-wider">
-                  {uploadResult.nhs_number || "Not detected"}
+                  {uploadResult.nhs_number
+                    ? `***-***-${uploadResult.nhs_number.slice(-4)}`
+                    : "Not detected"}
                 </p>
               </div>
               <div className="space-y-1">
