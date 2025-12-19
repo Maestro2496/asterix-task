@@ -1,6 +1,6 @@
 # Asterix - NHS Letter Processing System
 
-A serverless application for uploading, processing, and summarizing NHS letters using AI.
+A serverless application for uploading, processing, and summarising NHS letters using AI.
 
 🔗 **Live Demo:** [https://master.d1vexku8ke37lw.amplifyapp.com](https://master.d1vexku8ke37lw.amplifyapp.com)
 
@@ -47,7 +47,7 @@ A serverless application for uploading, processing, and summarizing NHS letters 
 ### 1. **Decoupled Upload and Processing**
 
 - Upload returns immediately after storing the file
-- AI summarization happens asynchronously via S3 event trigger
+- AI summarisation happens asynchronously via S3 event trigger
 
 ### 3. **DynamoDB with GSI Strategy**
 
@@ -105,7 +105,7 @@ The system uses an **event-driven architecture** for AI processing:
 | S3                  | PDF file storage       |
 | DynamoDB            | Metadata storage       |
 | SSM Parameter Store | Secrets management     |
-| OpenAI GPT-4o-mini  | AI summarization       |
+| OpenAI GPT-4o-mini  | AI summarisation       |
 
 ---
 
@@ -189,16 +189,16 @@ The system uses an **event-driven architecture** for AI processing:
 
 ### Current Prompt
 
-The current summarization prompt is basic:
+The current summarisation prompt is basic:
 
 ```javascript
 {
   role: "system",
-  content: "You are a medical document summarizer. Summarize the following NHS letter concisely, highlighting key information such as appointment details, medical instructions, and any required actions. Keep the summary under 200 words."
+  content: "You are a medical document summariser. Summarise the following NHS letter concisely, highlighting key information such as appointment details, medical instructions, and any required actions. Keep the summary under 200 words."
 }
 ```
 
-This could be improved by providing better context, and implementing an output validation, followin a predefined or configurable schema.
+This could be improved by providing better context, and implementing an output validation, following a predefined or configurable schema.
 
 ## Running Locally
 
