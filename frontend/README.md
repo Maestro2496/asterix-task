@@ -4,7 +4,6 @@ A modern React/Next.js frontend for uploading and managing NHS letters with AI-p
 
 ## Features
 
-- **Login Page**: Secure authentication with username/password
 - **Upload Page**: Drag-and-drop PDF upload with real-time NHS number extraction
 - **Processing Alert**: Visual feedback showing the summary is being generated
 - **Letters Table**: Search and view all letters by NHS number with status tracking
@@ -49,20 +48,7 @@ npm start
 
 ## Pages
 
-### Login (`/login`)
-
-Secure login page:
-
-- Username and password authentication
-- Tokens stored in localStorage
-- Auto-redirect when already authenticated
-
-**Demo Credentials** (from backend):
-
-- Username: `admin`, Password: `admin123`
-- Username: `user`, Password: `user123`
-
-### Upload (`/`)
+### Upload (`/upload`)
 
 Upload NHS letters (PDF only) to the system:
 
@@ -88,9 +74,7 @@ View uploaded letters by NHS number:
 
 ## API Endpoints Used
 
-| Endpoint                 | Method | Description                     | Auth Required |
-| ------------------------ | ------ | ------------------------------- | ------------- |
-| `/login`                 | POST   | Authenticate user               | No            |
-| `/upload`                | POST   | Upload a PDF file               | Yes           |
-| `/files/nhs/{nhsNumber}` | GET    | Get all files for an NHS number | Yes           |
-| `/files/last`            | GET    | Get the last uploaded file      | Yes           |
+| Endpoint  | Method | Description       | Auth Required |
+| --------- | ------ | ----------------- | ------------- |
+| `/upload` | POST   | Upload a PDF file | Yes           |
+| `/all`    | GET    | Get all letters   | Yes           |
