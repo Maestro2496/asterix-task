@@ -26,7 +26,7 @@ A serverless application for uploading, processing, and summarizing NHS letters 
    ```
 3. Create a `.env.local` file and set the API URL:
    ```env
-   NEXT_PUBLIC_API_URL=https://wcnpoewlzb.execute-api.us-east-1.amazonaws.com/Prod
+   NEXT_PUBLIC_API_URL=https://4vkjbzlzdh.execute-api.us-east-1.amazonaws.com/Prod/
    ```
 4. Install dependencies and run:
    ```bash
