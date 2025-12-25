@@ -65,8 +65,8 @@ A serverless application for uploading, processing, and summarising NHS letters 
 ### 5. **API Gateway with Lambda Authorizer**
 
 - Centralised authorisation logic
+- Left unchecked for now, since it's an MVP
 - Token-based authentication
-- **Why**: Consistent security across all endpoints; easy to extend with proper auth later
 
 ---
 
@@ -86,13 +86,13 @@ The system uses an **event-driven architecture** for AI processing:
 
 ### Frontend
 
-| Technology   | Purpose                         |
-| ------------ | ------------------------------- |
-| Next.js 16   | React framework with App Router |
-| TypeScript   | Type safety                     |
-| Tailwind CSS | Styling                         |
-| Radix UI     | Accessible component primitives |
-| shadcn/ui    | Component library               |
+| Technology   |
+| ------------ |
+| Next.js 16   |
+| TypeScript   |
+| Tailwind CSS |
+| Radix UI     |
+| shadcn/ui    |
 
 ### Backend
 
@@ -132,6 +132,7 @@ The system uses an **event-driven architecture** for AI processing:
 | `s3_key`       | String | S3 object key                   |
 | `file_size`    | Number | File size in bytes              |
 | `num_pages`    | Number | PDF page count                  |
+| `content_hash` | String | SHA-256 hash for deduplication  |
 | `status`       | String | "pending" or "processed"        |
 | `summary`      | String | AI-generated summary            |
 | `processed_at` | String | Processing completion timestamp |
@@ -171,8 +172,6 @@ The system uses an **event-driven architecture** for AI processing:
 
 4. **Session Management**
    - Implement secure httpOnly cookies
-   - Add CSRF protection
-   - Consider OAuth 2.0 / OpenID Connect
 
 ### 📊 Additional Features to Add
 
@@ -182,6 +181,42 @@ The system uses an **event-driven architecture** for AI processing:
 - Letter categorisation/tagging
 - Audit logging
 - Rate limiting
+
+### 🏗️ System Design Improvements
+
+**Proposed Architecture (v2)**
+
+![Proposed Architecture](architecture_v2.png)
+
+The current architecture triggers the processing Lambda directly from S3 events. A better approach is shown in the diagram above, using DynamoDB Streams and SQS for improved reliability and control.
+
+**Key Architectural Changes:**
+
+| Current Architecture              | Proposed Architecture                     |
+| --------------------------------- | ----------------------------------------- |
+| S3 events trigger Lambda directly | DynamoDB Streams (CDC) trigger processing |
+| Processing coupled to upload      | Decoupled via SQS queue                   |
+| S3 upload in request path         | S3 storage async via DynamoDB Stream      |
+
+**Proposed Flow:**
+
+1. User uploads via `/upload` endpoint
+2. Lambda validates and extracts content, saves to DynamoDB
+3. DynamoDB Stream (CDC) triggers two async processes:
+   - Sends message to SQS for AI summarisation
+   - Archives file to S3
+4. AI Summarisation Lambda consumes from SQS
+5. On success (`Extraction_Ok`) - updates DynamoDB with summary
+6. On failure (`Extraction_Error`) - message returns to SQS for retry/DLQ
+
+**Benefits:**
+
+1. **Reliable CDC** - DynamoDB Streams provide guaranteed change data capture
+2. **Fine-grained Control** - Adjust batch sizes, visibility timeouts, and retry policies via SQS configuration
+3. **Human-in-the-Loop** - Messages can be held in the queue pending manual review, or routed to a Dead Letter Queue (DLQ) for human intervention on failures
+4. **Rate Limiting** - Control the rate of AI API calls to avoid throttling and manage costs
+5. **Retry Logic** - Built-in retry with exponential backoff; failed extractions return to the queue
+6. **Decoupling** - S3 storage decoupled from upload latency; processing layer can be updated independently
 
 ---
 
